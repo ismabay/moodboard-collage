@@ -1,0 +1,20 @@
+{
+  "id": "7aecd0b3-f9d2-4784-a9b0-f3855a0a382f",
+  "version": "1.0.0",
+  "platform": "all",
+  "arch": "all",
+  "name": "Moodboard Collage",
+  "logo": "/logo.png",
+  "keywords": ["moodboard", "collage", "gallery", "layout"],
+  "devTools": false,
+  "main": {
+    "url": "index.html",
+    "width": 1100,
+    "height": 780,
+    "minWidth": 900,
+    "minHeight": 600,
+    "resizable": true,
+    "frame": true,
+    "backgroundColor": "#f4f3ef"
+  }
+}

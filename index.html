@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Moodboard Collage</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div id="boards-view" class="view">
+  <div class="topbar">
+    <h1>Moodboard Collage</h1>
+  </div>
+  <div id="boards-grid" class="boards-grid"></div>
+</div>
+
+<div id="setup-view" class="view hidden">
+  <div class="topbar">
+    <h1>Moodboard Collage</h1>
+    <span id="image-count" class="muted"></span>
+  </div>
+
+  <div id="thumb-strip" class="thumb-strip"></div>
+
+  <div class="panel">
+
+    <div class="row">
+      <p class="label">Grid size <span id="grid-label" class="value">3 × 4</span></p>
+      <div id="grid-picker" class="grid-picker"></div>
+      <div class="manual-grid">
+        <label>Columns <input type="number" id="cols-input" min="1" max="8" value="4"></label>
+        <label>Rows <input type="number" id="rows-input" min="1" max="50" value="3"></label>
+      </div>
+    </div>
+
+    <div class="row">
+      <p class="label">Page size</p>
+      <div class="btn-group" id="ratio-group">
+        <button data-ratio="1:1" class="opt-btn"><span class="ratio-swatch" style="width:20px;height:20px;"></span>Square</button>
+        <button data-ratio="3:4" class="opt-btn"><span class="ratio-swatch" style="width:15px;height:20px;"></span>Portrait</button>
+        <button data-ratio="4:3" class="opt-btn"><span class="ratio-swatch" style="width:20px;height:15px;"></span>Landscape</button>
+        <button data-ratio="2:3" class="opt-btn"><span class="ratio-swatch" style="width:13px;height:20px;"></span>2:3</button>
+        <button data-ratio="free" class="opt-btn"><span class="ratio-swatch free" style="width:15px;height:20px;"></span>Free ↓</button>
+        <button data-ratio="custom" class="opt-btn"><span class="ratio-swatch" style="width:15px;height:20px;border-style:dotted;"></span>Custom</button>
+      </div>
+      <div id="custom-ratio-inputs" class="custom-ratio-row hidden">
+        <input type="number" id="ratio-w-input" min="1" max="200" value="4"> :
+        <input type="number" id="ratio-h-input" min="1" max="200" value="8">
+        <span class="muted">width : height</span>
+      </div>
+    </div>
+
+    <div class="row">
+      <p class="label">Layout</p>
+      <div class="btn-group" id="layout-group">
+        <button data-layout="grid" class="opt-btn">
+          <svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="1" y="1" width="4" height="4"/><rect x="6" y="1" width="4" height="4"/><rect x="11" y="1" width="4" height="4"/><rect x="1" y="6" width="4" height="4"/><rect x="6" y="6" width="4" height="4"/><rect x="11" y="6" width="4" height="4"/><rect x="1" y="11" width="4" height="4"/><rect x="6" y="11" width="4" height="4"/><rect x="11" y="11" width="4" height="4"/></svg>
+          Grid
+        </button>
+        <button data-layout="justified" class="opt-btn">
+          <svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="1" y="1" width="9" height="4"/><rect x="11" y="1" width="4" height="4"/><rect x="1" y="6" width="4" height="4"/><rect x="6" y="6" width="6" height="4"/><rect x="13" y="6" width="2" height="4"/><rect x="1" y="11" width="6" height="4"/><rect x="8" y="11" width="7" height="4"/></svg>
+          Justified
+        </button>
+        <button data-layout="waterfall" class="opt-btn">
+          <svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="1" y="1" width="3" height="8"/><rect x="1" y="10" width="3" height="5"/><rect x="5" y="1" width="3" height="5"/><rect x="5" y="7" width="3" height="8"/><rect x="9" y="1" width="3" height="10"/><rect x="9" y="12" width="3" height="3"/><rect x="13" y="1" width="3" height="6"/><rect x="13" y="8" width="3" height="7"/></svg>
+          Waterfall
+        </button>
+      </div>
+      <div class="row" id="grid-square-row">
+        <p class="label">Image fit (grid is always square)</p>
+        <div class="btn-group" id="fit-group">
+          <button data-fit="cover" class="opt-btn">Crop to fill</button>
+          <button data-fit="contain" class="opt-btn">Fit inside</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <p class="label">Spacing <span id="gutter-out" class="value">6px</span></p>
+      <input type="range" min="0" max="40" value="6" step="1" id="gutter-input">
+    </div>
+
+    <div class="row">
+      <p class="label">Background</p>
+      <div class="bg-row" id="bg-group">
+        <button data-bg="#ffffff" class="swatch color-swatch" data-bg-marker="1" style="background:#ffffff"></button>
+        <button data-bg="#000000" class="swatch color-swatch" data-bg-marker="1" style="background:#000000"></button>
+        <button data-bg="#9a9a94" class="swatch color-swatch" data-bg-marker="1" style="background:#9a9a94"></button>
+        <button data-bg="#d6d5cd" class="swatch color-swatch" data-bg-marker="1" style="background:#d6d5cd"></button>
+        <button data-bg="#444441" class="swatch color-swatch" data-bg-marker="1" style="background:#444441"></button>
+        <span id="custom-bg-wrap" class="swatch custom-color-label" title="Pick any color">
+          <input type="color" id="custom-bg" value="#e6f1fb">
+        </span>
+      </div>
+    </div>
+
+    <div class="row">
+      <p class="label">Format</p>
+      <div class="btn-group" id="fmt-group">
+        <button data-fmt="jpg" class="opt-btn">JPG</button>
+        <button data-fmt="png" class="opt-btn">PNG</button>
+      </div>
+    </div>
+
+    <div class="row">
+      <label class="checkbox-row"><input type="checkbox" id="rotate-toggle"> Slight random tilt (collage feel)</label>
+    </div>
+
+  </div>
+
+  <div class="actions">
+    <button id="continue-btn" class="primary-btn">Continue →</button>
+  </div>
+</div>
+
+<div id="canvas-view" class="view hidden">
+  <div class="toolbar">
+    <button id="boards-btn" class="ghost-btn">☰ Boards</button>
+    <button id="undo-btn" class="ghost-btn" title="Undo last change">↶ Undo</button>
+    <button id="back-btn" class="ghost-btn">← Back</button>
+    <button id="add-images-btn" class="ghost-btn">+ Add images</button>
+    <button id="add-text-btn" class="ghost-btn">+ Add text</button>
+    <button id="pen-btn" class="ghost-btn">✏️ Pen</button>
+    <div class="btn-group" id="arrange-group">
+      <button data-arrange="free" class="opt-btn small active">Free</button>
+      <button data-arrange="grid" class="opt-btn small">Grid</button>
+      <button data-arrange="flow" class="opt-btn small">Flow</button>
+    </div>
+    <label class="checkbox-row" id="lock-toggle-row"><input type="checkbox" id="lock-toggle"> Lock (swap only)</label>
+    <span id="arrange-hint" class="muted">Drag images freely, resize from the corner, click to bring to front</span>
+    <button id="export-btn" class="primary-btn">Export</button>
+  </div>
+  <div class="scale-row">
+    <span class="muted">Size</span>
+    <input type="range" id="global-scale-input" min="30" max="250" value="100" step="1">
+    <span id="global-scale-out" class="value">100%</span>
+    <label class="checkbox-row" id="scale-whole-row"><input type="checkbox" id="scale-whole-toggle"> Scale whole composition together</label>
+  </div>
+  <div id="stage-area">
+    <div id="item-toolbar-bar" class="item-toolbar-bar hidden"></div>
+    <div id="stage-wrap">
+      <div id="stage-canvas">
+        <div id="stage"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="js/app.js?v=20260823c"></script>
+
+<div id="picker-modal" class="modal-overlay hidden">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h2>Add images</h2>
+      <button id="picker-cancel-btn" class="ghost-btn">Cancel</button>
+    </div>
+    <div id="picker-grid" class="picker-grid"></div>
+    <div id="picker-load-more-row" class="picker-load-more-row hidden">
+      <button id="picker-load-more-btn" class="ghost-btn">More images</button>
+    </div>
+    <div class="modal-footer">
+      <input type="text" id="picker-search" placeholder="Search your whole Eagle library..." class="picker-search-input">
+      <button id="picker-add-btn" class="primary-btn" disabled>Add selected (0)</button>
+    </div>
+  </div>
+</div>
+
+<div id="name-modal" class="modal-overlay hidden">
+  <div class="modal-box" style="width:380px;">
+    <div class="modal-header">
+      <h2 id="name-modal-title">New board</h2>
+    </div>
+    <div style="padding:16px;">
+      <input type="text" id="name-modal-input" placeholder="Board name" class="picker-search-input" style="width:100%;">
+    </div>
+    <div class="modal-footer" style="justify-content:flex-end;">
+      <button id="name-modal-cancel" class="ghost-btn">Cancel</button>
+      <button id="name-modal-confirm" class="primary-btn">Create</button>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
