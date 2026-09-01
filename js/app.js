@@ -260,6 +260,15 @@ eagle.onPluginCreate(async () => {
     if (e.key === 'Enter') confirmNameModal();
   });
 
+  document.getElementById('delete-modal-cancel').addEventListener('click', closeDeleteModal);
+  document.getElementById('delete-modal-confirm').addEventListener('click', () => {
+    if (deleteModalTargetId) deleteBoard(deleteModalTargetId);
+    closeDeleteModal();
+  });
+  document.getElementById('delete-modal').addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeDeleteModal();
+  });
+
   document.addEventListener('pointerup', recordChange);
 
   const stageEl = document.getElementById('stage');
@@ -272,13 +281,13 @@ eagle.onPluginCreate(async () => {
 function updateArrangeHint() {
   const hint = document.getElementById('arrange-hint');
   if (state.arrangeMode === 'grid') {
-    hint.textContent = 'Fixed grid — drag one image onto another to swap places. The Size slider changes cell size and reflows.';
+    hint.textContent = 'Drag to swap, Size slider resizes cells';
   } else if (state.arrangeMode === 'flow') {
-    hint.textContent = 'Masonry columns — drag one image onto another to swap places. The Size slider changes column width and reflows.';
+    hint.textContent = 'Drag to swap, Size slider resizes columns';
   } else if (state.freeLocked) {
-    hint.textContent = 'Locked — drag an image onto another to swap places. Resizing pushes neighbors to keep the gap.';
+    hint.textContent = 'Drag to swap, resize pushes neighbors';
   } else {
-    hint.textContent = 'Drag to marquee-select, click images (Shift/Cmd to add), or just drag one freely. Resize from the corner.';
+    hint.textContent = 'Drag freely, resize from corner';
   }
 }
 
@@ -345,24 +354,9 @@ function renderBoardsView() {
     renameBtn.addEventListener('click', (e) => { e.stopPropagation(); openRenameModal(b.id, b.name); });
     const delBtn = document.createElement('button');
     delBtn.textContent = '✕'; delBtn.title = 'Delete';
-    let confirmTimer = null;
     delBtn.addEventListener('click', (e) => {
       e.stopPropagation();
-      if (delBtn.dataset.confirming === '1') {
-        clearTimeout(confirmTimer);
-        deleteBoard(b.id);
-        return;
-      }
-      delBtn.dataset.confirming = '1';
-      delBtn.textContent = 'Sure?';
-      delBtn.title = 'Click again to permanently delete';
-      delBtn.classList.add('confirm-delete');
-      confirmTimer = setTimeout(() => {
-        delBtn.dataset.confirming = '0';
-        delBtn.textContent = '✕';
-        delBtn.title = 'Delete';
-        delBtn.classList.remove('confirm-delete');
-      }, 2500);
+      openDeleteModal(b.id, b.name);
     });
     actions.appendChild(renameBtn); actions.appendChild(delBtn);
 
@@ -563,6 +557,21 @@ function deleteBoard(id) {
   saveBoardsIndex(boards);
   localStorage.removeItem(BOARD_KEY_PREFIX + id);
   renderBoardsView();
+}
+
+let deleteModalTargetId = null;
+function openDeleteModal(id, name) {
+  deleteModalTargetId = id;
+  document.getElementById('delete-modal-text').textContent =
+    'Permanently delete "' + (name || 'Untitled') + '"? This removes all images, text, drawings, layout, and settings saved in this board. This action cannot be undone.';
+  document.getElementById('delete-modal').classList.remove('hidden');
+  // Focus lands on Cancel, not the destructive action, so an accidental
+  // Enter press doesn't delete anything.
+  document.getElementById('delete-modal-cancel').focus();
+}
+function closeDeleteModal() {
+  deleteModalTargetId = null;
+  document.getElementById('delete-modal').classList.add('hidden');
 }
 
 async function generateCoverThumbnail() {
@@ -1024,13 +1033,36 @@ function renderLineSVG(el, item) {
 function freehandActualPt(item, p) {
   return { x: p.x * item.w, y: p.y * item.h };
 }
+
+// Builds an SVG path that gently rounds each interior corner (cuts a small
+// piece off each vertex and bridges it with a curve) instead of a sharp
+// angle — subtle on an already-smooth freehand stroke, but takes the edge
+// off a zigzag's sharp points.
+function roundedPathD(pts, radius) {
+  if (pts.length < 3) return 'M ' + pts.map(p => p.x + ',' + p.y).join(' L ');
+  let d = 'M ' + pts[0].x + ',' + pts[0].y;
+  for (let i = 1; i < pts.length - 1; i++) {
+    const prev = pts[i - 1], cur = pts[i], next = pts[i + 1];
+    const d1 = Math.hypot(cur.x - prev.x, cur.y - prev.y);
+    const d2 = Math.hypot(next.x - cur.x, next.y - cur.y);
+    if (d1 < 0.01 || d2 < 0.01) { d += ' L ' + cur.x + ',' + cur.y; continue; }
+    const r = Math.min(radius, d1 / 2, d2 / 2);
+    const a = { x: cur.x + (prev.x - cur.x) / d1 * r, y: cur.y + (prev.y - cur.y) / d1 * r };
+    const b = { x: cur.x + (next.x - cur.x) / d2 * r, y: cur.y + (next.y - cur.y) / d2 * r };
+    d += ' L ' + a.x + ',' + a.y + ' Q ' + cur.x + ',' + cur.y + ' ' + b.x + ',' + b.y;
+  }
+  d += ' L ' + pts[pts.length - 1].x + ',' + pts[pts.length - 1].y;
+  return d;
+}
+
 function freehandPathD(item, forVisibleStroke) {
   const pts = item.points.map(p => freehandActualPt(item, p));
   if (forVisibleStroke && pts.length >= 2) {
     if (item.arrow) pts[pts.length - 1] = pullBackForArrow(pts[pts.length - 2], pts[pts.length - 1], item.strokeWidth);
     if (item.arrowStart) pts[0] = pullBackForArrow(pts[1], pts[0], item.strokeWidth);
   }
-  return 'M ' + pts.map(p => p.x + ',' + p.y).join(' L ');
+  const radius = Math.max(8, item.strokeWidth * 2.5);
+  return roundedPathD(pts, radius);
 }
 
 function renderFreehandSVG(el, item) {
@@ -2903,6 +2935,30 @@ function drawItemBorder(ctx, item, w, h, scale) {
   ctx.restore();
 }
 
+// Canvas equivalent of roundedPathD — traces the same gently-rounded corners
+// so the exported image matches what's shown on screen.
+function drawRoundedPathCanvas(ctx, pts, radius) {
+  ctx.beginPath();
+  if (pts.length < 2) return;
+  ctx.moveTo(pts[0].x, pts[0].y);
+  if (pts.length < 3) {
+    ctx.lineTo(pts[1].x, pts[1].y);
+    return;
+  }
+  for (let i = 1; i < pts.length - 1; i++) {
+    const prev = pts[i - 1], cur = pts[i], next = pts[i + 1];
+    const d1 = Math.hypot(cur.x - prev.x, cur.y - prev.y);
+    const d2 = Math.hypot(next.x - cur.x, next.y - cur.y);
+    if (d1 < 0.01 || d2 < 0.01) { ctx.lineTo(cur.x, cur.y); continue; }
+    const r = Math.min(radius, d1 / 2, d2 / 2);
+    const a = { x: cur.x + (prev.x - cur.x) / d1 * r, y: cur.y + (prev.y - cur.y) / d1 * r };
+    const b = { x: cur.x + (next.x - cur.x) / d2 * r, y: cur.y + (next.y - cur.y) / d2 * r };
+    ctx.lineTo(a.x, a.y);
+    ctx.quadraticCurveTo(cur.x, cur.y, b.x, b.y);
+  }
+  ctx.lineTo(pts[pts.length - 1].x, pts[pts.length - 1].y);
+}
+
 function drawArrowCanvas(ctx, fromX, fromY, toX, toY, strokeWidth, color) {
   const a = arrowHeadPoints(fromX, fromY, toX, toY, strokeWidth);
   ctx.fillStyle = color;
@@ -2945,16 +3001,14 @@ function drawFreehandItem(ctx, item, x, y, w, h, scale) {
   ctx.lineCap = 'round';
   ctx.lineJoin = 'round';
   ctx.setLineDash(item.dashed ? [sw * 2.6, sw * 2.2] : []);
-  ctx.beginPath();
   const actualPts = item.points.map(p => ({ x: x + p.x * item.w * scale, y: y + p.y * item.h * scale }));
   const drawPts = actualPts.slice();
   if (drawPts.length >= 2) {
     if (item.arrow) drawPts[drawPts.length - 1] = pullBackForArrow(drawPts[drawPts.length - 2], drawPts[drawPts.length - 1], sw);
     if (item.arrowStart) drawPts[0] = pullBackForArrow(drawPts[1], drawPts[0], sw);
   }
-  drawPts.forEach((p, i) => {
-    if (i === 0) ctx.moveTo(p.x, p.y); else ctx.lineTo(p.x, p.y);
-  });
+  const radius = Math.max(8 * scale, sw * 2.5);
+  drawRoundedPathCanvas(ctx, drawPts, radius);
   ctx.stroke();
   ctx.setLineDash([]);
 

@@ -118,16 +118,20 @@
     <button id="boards-btn" class="ghost-btn">☰ Boards</button>
     <button id="undo-btn" class="ghost-btn" title="Undo last change">↶ Undo</button>
     <button id="back-btn" class="ghost-btn">← Back</button>
-    <button id="add-images-btn" class="ghost-btn">+ Add images</button>
-    <button id="add-text-btn" class="ghost-btn">+ Add text</button>
+    <div class="toolbar-sep"></div>
+    <button id="add-images-btn" class="ghost-btn">+ Images</button>
+    <button id="add-text-btn" class="ghost-btn">+ Text</button>
     <button id="pen-btn" class="ghost-btn">✏️ Pen</button>
+    <div class="toolbar-sep"></div>
     <div class="btn-group" id="arrange-group">
       <button data-arrange="free" class="opt-btn small active">Free</button>
       <button data-arrange="grid" class="opt-btn small">Grid</button>
       <button data-arrange="flow" class="opt-btn small">Flow</button>
     </div>
-    <label class="checkbox-row" id="lock-toggle-row"><input type="checkbox" id="lock-toggle"> Lock (swap only)</label>
-    <span id="arrange-hint" class="muted">Drag images freely, resize from the corner, click to bring to front</span>
+    <div class="toolbar-sep"></div>
+    <label class="checkbox-row" id="lock-toggle-row"><input type="checkbox" id="lock-toggle"> Lock</label>
+    <span id="arrange-hint" class="muted">Drag freely, resize from corner</span>
+    <div class="toolbar-spacer"></div>
     <button id="export-btn" class="primary-btn">Export</button>
   </div>
   <div class="scale-row">
@@ -146,7 +150,7 @@
   </div>
 </div>
 
-<script src="js/app.js?v=20260823c"></script>
+<script src="js/app.js?v=20260901a"></script>
 
 <div id="picker-modal" class="modal-overlay hidden">
   <div class="modal-box">
@@ -176,6 +180,21 @@
     <div class="modal-footer" style="justify-content:flex-end;">
       <button id="name-modal-cancel" class="ghost-btn">Cancel</button>
       <button id="name-modal-confirm" class="primary-btn">Create</button>
+    </div>
+  </div>
+</div>
+
+<div id="delete-modal" class="modal-overlay hidden">
+  <div class="modal-box" style="width:420px;">
+    <div class="modal-header">
+      <h2>Permanently delete board?</h2>
+    </div>
+    <div style="padding:16px;">
+      <p id="delete-modal-text" style="margin:0; line-height:1.5; color:var(--text-primary);"></p>
+    </div>
+    <div class="modal-footer" style="justify-content:flex-end;">
+      <button id="delete-modal-cancel" class="ghost-btn">Cancel</button>
+      <button id="delete-modal-confirm" class="danger-btn">Permanently Delete</button>
     </div>
   </div>
 </div>
